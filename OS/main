@@ -69,7 +69,7 @@ function Disp_start()
 			while stop.Smenu ~= true do                               -- 按下开始按钮后显示菜单
 				if event_name == "Button_click" then
 					if event_pram1 == 1 then
-						form.downMenu(4,1,2,StartContent,128,512,256)
+						form.downMenu(1,1,2,StartContent,128,512,256)
 					end
 				end
 				os.sleep(0) 
@@ -101,5 +101,50 @@ function Disp_time()
 	end
 
 end
-
-parallel.waitForAll(Background,Disp_start,Disp_time)
+--=========== 主菜单,程序显示 ===================
+function Disp_program()
+	function Menu_Filelist()
+		Filelist = fs.list("")
+		form.Spec_downMenu(2,1,2,math.floor(t_wid / 2),Filelist,32768,1,8)
+	end
+	
+	function Menu_Spvision()
+		while stop.ProgramMenu ~= true do
+			os.sleep(0)
+			if event_name == "Menu_click" then
+				if event_pram1 == 2 then
+					Prog_name = Filelist[event_pram2] -- 获取程序名
+					print("loading")
+					Main_stop()
+					--[[init_graph()
+					shell.run(Prog_name)
+					Page_Main()
+					]]--
+				end
+			end	
+		end
+		if stop.ProgramMenu == true then
+			os.queueEvent("Menu_close",2) 
+		end
+	end
+	parallel.waitForAll(Menu_Filelist,Menu_Spvision)
+end
+--============= 收场用函数 ========================
+function Main_stop()
+	stop.Smenu = true
+	stop.ProgramMenu = true
+	stop.clock = true
+	stop.Sbutton = true
+	stop.event = true
+end
+function Page_Main()
+	stop.Smenu = false
+	stop.ProgramMenu = false
+	stop.clock = false
+	stop.Sbutton = false
+	stop.event = false
+	init_graph()
+	 form.line(1,1,t_wid,256)
+parallel.waitForAll(Background,Disp_start,Disp_time,Disp_program)
+end
+Page_Main()

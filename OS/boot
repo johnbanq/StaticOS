@@ -15,7 +15,7 @@ term.setCursorPos(word_x,word_y)
 print("L o a d i n g . . .")	
 function Barval()                  -- 装逼用-加载进度条
 	for BarCounter = 1,30 do
-		os.sleep(0.2)
+		os.sleep(0.01)
 		os.queueEvent("ProgressBar_set",1,BarCounter)
 	end
 	os.queueEvent("ProgressBar_close",1)

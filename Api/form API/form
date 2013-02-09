@@ -49,9 +49,14 @@ brake = true
 end
 elseif event == "Button_Cchange" then
 if clb == buttonid then
-clx = BackGroundColour
-cly = PressedColour          -- 改变按钮颜色[event:Button_Cchange] Arg1:按钮ID  Arg2：按钮颜色 Arg3:被按下后的按钮颜色 Arg4:字体颜色
-pra3 = WordColour
+BackGroundColour = clx
+PressedColour = cly          -- 改变按钮颜色[event:Button_Cchange] Arg1:按钮ID  Arg2：按钮颜色 Arg3:被按下后的按钮颜色 Arg4:字体颜色
+WordColour = pra3
+PrintButton()
+end
+elseif event == "Button_Wchange" then
+if clb == buttonid then
+wordonit = clx
 PrintButton()
 end
 end
@@ -223,7 +228,7 @@ while brake ~= true do
 event,id,value = os.pullEvent()
 if event == "ProgressBar_set" then
 if id == barid then
-filled = value
+filled = tonumber(value)
 local counter = 0
 while counter ~= legth do
 paintutils.drawPixel(startx + counter,starty,BackGroundColor)     -- draw ProgressBar
@@ -258,7 +263,6 @@ while brake ~= true do
 event,id,value = os.pullEvent()
 if event == "ProgressBar_set" then
 if id == barid then
-filled = tonumber(value)
 local counter = 0
 while counter ~= legth do
 paintutils.drawPixel(startx + counter,starty,BackGroundColor)     -- draw ProgressBar
@@ -346,7 +350,97 @@ while Mbrake ~= true do
 				while founded ~= true do
 					local TableChoosed = OrignChoosed + 1
 					if TableChoosed <= table.getn(wordonit) then                                     -- 判断单击的项目,并给予反应
-						if TableChoosed >= 0 then
+						if TableChoosed > 0 then
+							
+							PrintButton2(startx,starty + OrignChoosed,Legth,wordonit[TableChoosed],ClickedColour,wordColour)
+							sleep(0.2)
+							PrintButton(startx,starty + OrignChoosed,Legth,wordonit[TableChoosed],menuColour,wordColour)     -- 逐个判定点击
+							os.queueEvent("Menu_click",menuid,TableChoosed)
+							TableChoosed = nil
+							OrignChoosed = nil
+							founded = true
+						end
+					end
+				end
+			end			
+		end
+	elseif event == "menu_close" then
+		if para1 == menuid then
+			Mbrake = true
+		end
+	end
+end
+
+end
+function Spec_downMenu(menuid,startx,starty,legth,wordonit,wordColour,menuColour,ClickedColour)
+
+local function lines(startx2,starty2,legth2,colour2)
+	term.setCursorPos(startx2,starty2)
+	local LDcounter = 0                                     -- 保持menu函数的standalone
+	while LDcounter ~= legth2 do
+		paintutils.drawPixel(startx + LDcounter,starty,colour2)
+		LDcounter = LDcounter + 1
+	end
+end
+
+
+local function PrintButton(startx3,starty3,legth3,wordonit3,BackGroundColour3,WordColour3)                 -- 绘图函数[未按下按钮]
+	term.setCursorPos(startx3,starty3)
+	P10counter = 0
+	while P10counter ~= legth3 do
+		paintutils.drawPixel(startx3 + P10counter,starty3,BackGroundColour3)
+		P10counter = P10counter + 1
+	end
+	term.setCursorPos(startx3 + 1,starty3)
+	term.setTextColor(WordColour3)
+	print(wordonit3)
+end
+
+
+local function PrintButton2(startx4,starty4,legth4,wordonit4,PressedColour4,WordColour4)                  -- 绘图函数[已按下按钮]
+	term.setCursorPos(startx4,starty4)
+	P11counter = 0
+	while P11counter ~= legth4 do
+		paintutils.drawPixel(startx4 + P11counter,starty4,PressedColour4)
+		P11counter = P11counter + 1
+	end
+	term.setCursorPos(startx4 + 1,starty4)
+	term.setTextColor(WordColour4)
+	print(wordonit4)
+end
+
+--[外界函数引入结束][引入来源: formAPI button函数 和 line函数]
+
+local StringLegth = 0
+local Scounter = 1
+
+while wordonit[Scounter] do
+	local Stemp = wordonit[Scounter]
+	local Cstring = string.len(Stemp)
+	if Cstring > StringLegth then
+	StringLegth = Cstring                                       -- 测定table中最长字符串的长
+	end
+	Scounter = Scounter + 1
+end
+local Legth = legth -- Legth变量值进行修改
+local Tablecounter = 1
+while wordonit[Tablecounter] do
+local Ytemp = Tablecounter - 1
+	PrintButton(startx,starty + Ytemp ,Legth,wordonit[Tablecounter],menuColour,wordColour) -- 绘制菜单
+	Tablecounter = Tablecounter + 1
+end
+
+while Mbrake ~= true do
+	event,para1,para2,para3,para4 = os.pullEvent()
+	if event == "mouse_click" then
+		if para2 <= startx + Legth then
+			if para2 >= startx then
+				founded = false
+				local OrignChoosed = para3 - starty
+				while founded ~= true do
+					local TableChoosed = OrignChoosed + 1
+					if TableChoosed <= table.getn(wordonit) then                                     -- 判断单击的项目,并给予反应
+						if TableChoosed > 0 then
 							
 							PrintButton2(startx,starty + OrignChoosed,Legth,wordonit[TableChoosed],ClickedColour,wordColour)
 							sleep(0.2)
