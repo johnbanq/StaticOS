@@ -1,0 +1,105 @@
+-- ================== 系统初始化开始 ==================
+--======================图形初始化================
+function init_graph()
+term.setCursorPos(1,1)
+term.setBackgroundColor(1)
+term.clear()                   -- 设置背景颜色
+term.setTextColor(32768)  -- 设置字体颜色
+t_wid,t_hei = term.getSize() -- 获取显示屏大小 t_wid即为宽度 t_hei即为长度
+end
+init_graph()
+--======================硬件扫描================
+function Scan_Device()
+	Device_id,Device_side = smartperi.status() -- 获取硬件ID2type和ID2side表
+
+	for coun=1,6 do
+		if Device_id[coun] == "modem" then     -- 检测无线猫的ID/位置
+			Modem_id = coun
+			Modem_side = Device_side[coun]
+			
+		elseif Device_id[coun] == "printer" then        -- 检测打印机的ID/位置
+			Printer_id = coun
+			Printer_side = Device_side[coun]
+			
+		elseif Device_id[coun] == "drive" then        -- 检测软驱的ID/位置
+			Drive_id = coun
+			Drive_side = Device_side[coun]
+			
+		elseif 	Device_id[coun] == "turtle" then        -- 检测机器人的ID/位置
+			Turtle_id = coun
+			Turtle_side = Device_side[coun]
+		end
+	end
+end
+Scan_Device()
+--==============扫描硬件区结束==================
+--================网络连接========================
+function Net_Hardstatus()
+	if Modem_side then
+		rednet.open(Modem_side)
+	end                                                         -- 检测系统能否成功发送消息
+	Net_Hstatus,Net_Hreport = pcall(rednet.announce())
+end
+Net_Hardstatus()
+if Net_Hstatus then
+	Net_Softstatus()
+end
+function Net_Softstatus()            -- 检测能否连接上集线服务器(WIP)
+end	
+--==============网络链接区结束====================
+stop = {} -- 构造一个表,用以存放标记控件是否关闭的量
+--=================== 初始化结束 ======================
+--==================== 背景线程======================
+function Background()
+	while stop.event ~= true do
+		event_name,event_pram1,event_pram2,event_pram3 = os.pullEvent()
+	end
+end
+--============== 页面区 ========================
+-- =================开始页面 ==========================
+ form.line(1,1,t_wid,256)
+-- =========== 开始按钮 ==============================
+function Disp_start()
+	function start_Button()
+		form.ClickButton(1,1,1,9,"start",128,512,256)        -- 开始按钮(ID:1)
+	end
+	
+	function start_Respond()
+		StartContent =  {"reboot","shutdown"}
+			while stop.Smenu ~= true do                               -- 按下开始按钮后显示菜单
+				if event_name == "Button_click" then
+					if event_pram1 == 1 then
+						form.downMenu(4,1,2,StartContent,128,512,256)
+					end
+				end
+				os.sleep(0) 
+			end	
+	end
+	
+	function start_Spvision()
+		while stop.Sbutton ~= true do
+			os.sleep(0)                           -- 空转循环              -- 停止则把stop.Sbutton赋为true
+		end
+		
+		if stop.Sbutton == true then
+			os.queueEvent("Button_close",1)     -- 关闭按钮
+		end
+	end
+	
+	parallel.waitForAll(start_Button,start_Respond)
+end
+-- ============= 时间显示 =============================
+function Disp_time()
+
+	while stop.clock ~= true do
+		os.sleep(0)
+		Int_time = os.time()                      -- 显示时间
+		term.setCursorPos(t_wid - 8,1)
+		term.setTextColor(1)
+		term.setBackgroundColor(256)
+		print(textutils.formatTime(Int_time, false ))
+	end
+
+end
+
+parallel.waitForAll(Background,Disp_start,Disp_time)

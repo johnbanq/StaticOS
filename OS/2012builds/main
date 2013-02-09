@@ -1,0 +1,201 @@
+-- ================== 系统初始化开始 ==================
+--======================图形初始化================
+term.setCursorPos(1,1)
+term.setBackgroundColor(1)
+term.clear()                   -- 设置背景颜色
+term.setTextColor(32768)  -- 设置字体颜色
+t_wid,t_hei = term.getSize() -- 获取显示屏大小 t_wid即为宽度 t_hei即为长度
+--======================硬件初始化================
+function ScanDevice()
+-- 获取设备ID/周边设备状态区
+peri_id,peri_side = smartperi.status() -- peri_id[设备ID] -->返回设备类型 peri_side[设备ID] -->返回设备位置,2个长度皆为6
+-- 网卡区
+for coun=1,6 do
+	if peri_id[coun] == "modem" then
+	Modem_id = coun                      -- 获取网卡ID
+	Modem_side = peri_side[Modem_id] -- 获取网卡位置
+	end
+end
+if Modem_side ~= nil then     -- 判断网卡是否存在
+rednet.open(Modem_side)
+Modem_status = true
+else
+Modem_status = false
+end
+-- 软驱区
+for coun=1,6 do
+	if peri_id[coun] == "drive" then
+	Drive_id = coun                      -- 获取软驱ID
+	Drive_side = peri_side[Drive_id] -- 获取软驱位置
+	end
+end
+if Drive_side ~= nil then     -- 判断软驱是否存在
+Drive_status = true 
+else
+Drive_status = false
+end
+end
+ScanDevice()
+--==============扫描硬件区结束==================
+--=================== 初始化结束 =======================
+--=========== 背景线程 ==========
+function EventRecv()
+	while true do
+		os.sleep(0)
+		event_name,event_pram1,event_pram2,event_pram3 = os.pullEvent()
+	end
+end
+--=========== 背景线程结束 ==========
+form.line(1,1,t_wid,256)
+--==================== 开始界面 ==================
+--====================开始按钮===================
+function Disp_start()
+	function start_Button()
+		form.ClickButton(1,1,1,9,"start",128,512,256)        -- 开始按钮(ID:1)
+	end
+
+	function start_Respond()
+		StartContent =  {"reboot","shutdown"}
+		while stop_StartMenu ~= true do
+			os.sleep(0)                                -- 按下开始按钮后显示菜单
+			if event_name == "Button_click" then
+				if event_pram1 == 1 then
+					form.downMenu(4,1,2,StartContent,128,512,256)
+				end
+			end
+		end	
+	end
+	
+	function Respond_Spvision()
+		while stop_StartMenu ~= true do
+			os.sleep(0)
+			if event_name == "Menu_click" then         -- 判定按下的项目
+				if event_pram1 == 4 then
+					if event_pram2 == 1 then -- 项目:重启[1]
+						os.reboot()
+					elseif event_pram2 == 2 then  -- 项目:关机[2]
+						os.shutdown()
+					end
+				end
+			end
+		end	
+	end
+	parallel.waitForAll(start_Button,start_Respond,Respond_Spvision)
+end
+--=======================时间显示====================
+function Disp_time()        -- 时间显示
+
+	function time_button()
+		form.ClickButton(2,t_wid - 8,1,7,"",256,1,128)  -- 时间按钮函数
+	end
+	
+	function time_change()
+	
+		while stop_clock ~= true do                    -- 时间变更函数
+			os.sleep(0.1)
+			Int_time = os.time()
+			os.queueEvent("Button_Wchange",2,textutils.formatTime(Int_time, false ))
+		end
+		
+		if stop_clock == true then
+			os.queueEvent("Button_close",2)     -- 收场,关闭时钟按钮
+		end
+		
+	end
+	
+parallel.waitForAll(time_button,time_change)
+end
+-- =================网络状态显示=============================
+function Disp_Net()     -- 网络状态按钮初始化
+	function Modem_button()
+		form.ClickButton(3,t_wid - 10,1,1,"N",16384,32768,16384) -- 显示按钮
+	end
+	
+	function Modem_check()
+		while stop_buttonset ~= true do
+			os.sleep(0)
+			if Modem_status == true then
+				os.queueEvent("Button_Cchange",3,8,8,32768)   -- 猫正常就变蓝,并持续检查
+			else
+				os.queueEvent("Button_Cchange",3,16384,16384,32768)   -- 无猫就保持红色,并尝试重连 
+			end	
+		end
+	end
+	
+	function Modem_Respond()
+		while stop_buttonset ~= true do
+			os.sleep(0)
+			if event_name == "peripheral_detach" then
+				print("peripheral_detach")
+				if event_pram1 == Modem_side then             -- 通过event系统判定猫是否在计算机上
+					Modem_status = false
+					rednet.close(Modem_side)
+				end
+			end
+			
+			if event_name == "peripheral" then 
+				local Pram_type = peripheral.getType(event_pram1)
+				if Pram_type == "modem" then 
+					print("peripheral_retach")
+					ScanDevice()
+				end
+			end
+		end
+	end
+	parallel.waitForAll(Modem_button,Modem_check,Modem_Respond)
+end
+-- =================软驱状态显示=============================
+function Disp_Drive()     -- 软驱状态按钮初始化
+	function Drive_button()
+		form.ClickButton(4,t_wid - 12,1,1,"D",16384,32768,16384) -- 显示按钮
+	end
+	
+	function Drive_check()        -- 检测软驱情况并改变按钮颜色
+	
+		function DriveButton_blue()  -- 变蓝函数
+			if DButton_color ~= true then
+				os.queueEvent("Button_Cchange",4,8,8,32768)   -- 软驱正常就变蓝,并持续检查
+				DButton_color = true
+			end
+		end
+	
+		function DriveButton_red()
+			if DButton_color2 ~= true then
+				os.queueEvent("Button_Cchange",4,16384,16384,32768)   -- 无软驱就保持红色,并等待
+				DButton_color2 = true
+			end
+		end
+
+		while stop_buttonset ~= true do
+			os.sleep(0)
+			if Drive_status == true then      -- 判断软驱的状态
+				DriveButton_blue()
+			else
+				DriveButton_red()                                                   
+			end	
+		end
+	end
+	
+	function Drive_Respond()
+		while stop_buttonset ~= true do
+			os.sleep(0)
+			if event_name == "peripheral_detach" then
+				if event_pram1 == Drive_side then             -- 通过event系统判定软驱是否在计算机上
+					print("Drive_detach")
+					Drive_status = false
+				end
+			end
+			
+			if event_name == "peripheral" then
+				local Pram_type = peripheral.getType(event_pram1)
+				if Pram_type == "drive" then 
+					print("Drive_retach")
+					ScanDevice()
+				end
+			end
+		end
+	end
+	parallel.waitForAll(Drive_button,Drive_check,Drive_Respond)
+end 
+-- =================== 设定结束 ========================================
+parallel.waitForAll(Disp_time,Disp_start,Disp_Drive,Disp_Net,EventRecv)

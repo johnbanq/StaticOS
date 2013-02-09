@@ -1,0 +1,27 @@
+-- [[staticOS boot file]]
+os.loadAPI("form")        -- 准备基础API
+os.loadAPI("smartperi")
+term.setBackgroundColor(1)
+term.clear()                   -- 设置背景颜色
+term.setTextColor(32768)  -- 设置字体颜色
+t_wid,t_hei = term.getSize() -- 获取显示屏大小 t_wid即为宽度 t_hei即为长度
+word_x = t_wid / 2 - (string.len("S t a t i c   O S") / 2) 
+word_y = t_hei / 2 - 2                   -- 计算显示字的位置
+term.setCursorPos(word_x,word_y)
+print("S t a t i c   O S")
+word_x = t_wid / 2 - (string.len("L o a d i n g . . .") / 2)
+word_y = t_hei / 2                    -- 计算显示字的位置
+term.setCursorPos(word_x,word_y)
+print("L o a d i n g . . .")	
+function Barval()                  -- 装逼用-加载进度条
+	for BarCounter = 1,30 do
+		sleep(0.1)
+		os.queueEvent("ProgressBar_set",1,BarCounter)
+	end
+	os.queueEvent("ProgressBar_close",1)
+end
+function bar()
+	form.ProgressBar(1,t_wid / 2 - 15,t_hei / 2 + 2,30,256,8) -- 装逼用-进度条
+end
+parallel.waitForAny(Barval,bar)
+os.run({},"main")

@@ -1,0 +1,73 @@
+function Search(Dtype)       -- 获取电脑四周某指定设备[Dtype]所在的方向
+	local Device = {}              -- 获取设备信息
+	Device[1] = peripheral.getType("top") -- top_status
+	Device[2] = peripheral.getType("bottom") -- bottom_status
+	Device[3] = peripheral.getType("left") -- left_status
+	Device[4] = peripheral.getType("right") -- right_status
+	Device[5] = peripheral.getType("front") -- front_status
+	Device[6] = peripheral.getType("back") -- back_status
+	local counter = 1   -- 设置数据记录
+	local Vaild = {}
+	for Counter = 1,6 do
+		if Device[Counter] == Dtype then
+			if Counter == 1 then
+				Vaild[counter] = "top" 
+				counter = counter + 1
+			elseif Counter == 2 then
+				Vaild[counter] = "bottom"
+				counter = counter + 1
+			elseif Counter == 3 then
+				Vaild[counter] = "left"
+				counter = counter + 1                 -- 自动筛查数据[有对应设备的方向会放入Vaild表中]
+			elseif Counter == 4 then
+				Vaild[counter] = "right"
+				counter = counter + 1
+			elseif Counter == 5 then
+				Vaild[counter] = "front"
+				counter = counter + 1
+			elseif Counter == 6 then
+				Vaild[counter] = "back"
+				counter = counter + 1
+			end	
+		end
+	end
+	return Vaild         -- 返回表
+end
+function status() -- 获取附近有设备的方向,和设备的类别
+local Device = {}              -- 获取设备信息
+Device[1] = peripheral.getType("top") -- top_status
+Device[2] = peripheral.getType("bottom") -- bottom_status
+Device[3] = peripheral.getType("left") -- left_status
+Device[4] = peripheral.getType("right") -- right_status
+Device[5] = peripheral.getType("front") -- front_status
+Device[6] = peripheral.getType("back") -- back_status
+	local counter = 1   -- 设置数据记录
+	local Vaild = {}
+	for Counter = 1,6 do
+		if Device[Counter] ~= nil then
+			if Counter == 1 then
+				Vaild[counter] = "top" 
+				counter = counter + 1
+			elseif Counter == 2 then
+				Vaild[counter] = "bottom"
+				counter = counter + 1
+			elseif Counter == 3 then
+				Vaild[counter] = "left"
+				counter = counter + 1                 -- 自动筛查数据[有设备的方向会放入Vaild表中]
+			elseif Counter == 4 then
+				Vaild[counter] = "right"
+				counter = counter + 1
+			elseif Counter == 5 then
+				Vaild[counter] = "front"
+				counter = counter + 1
+			elseif Counter == 6 then
+				Vaild[counter] = "back"
+				counter = counter + 1
+			end	
+			else
+			Vaild[counter] = "none"           
+			counter = counter + 1
+		end
+	end
+	return Device,Vaild -- 返回中Device是以设备ID为索引,表示设备ID对应的设备的表,Vaild是以设备ID为索引,表示对应方向的表
+end

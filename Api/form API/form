@@ -1,0 +1,370 @@
+function ClickButton(buttonid,startx,starty,legth,wordonit,BackGroundColour,WordColour,PressedColour)
+wordstart = legth / 2 - string.len(wordonit) / 2
+local function PrintButton()                 -- 绘图函数[未按下按钮]
+term.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColour)
+counter = counter + 1
+end
+term.setCursorPos(startx + wordstart,starty)
+term.setTextColor(WordColour)
+print(wordonit)
+end
+local function PrintButton2()                  -- 绘图函数[已按下按钮]
+term.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,PressedColour)
+counter = counter + 1
+end
+term.setCursorPos(startx + wordstart,starty)
+term.setTextColor(WordColour)
+print(wordonit)
+end
+PrintButton()
+local event = "?"
+local clb = 0
+local clx = 0
+local cly = 0
+local maxclick = startx + legth - 1
+while brake ~= true do
+event,clb,clx,cly,pra3 = os.pullEvent()
+if event == "mouse_click" then
+if clb == 1 then                        -- 判断是否点击
+if cly == starty then
+if clx >= startx then
+if clx <= maxclick then
+PrintButton2()
+os.sleep(0.2)
+PrintButton()                              -- 点击动画/发送EVENT[event: Button_click Arg1为按钮ID]
+os.queueEvent("Button_click",buttonid)
+end
+end
+end
+end
+elseif event == "Button_close" then
+if clb == buttonid then                       -- 关闭按钮[关闭event: Button_close Arg1为按钮ID]
+brake = true
+end
+elseif event == "Button_Cchange" then
+if clb == buttonid then
+clx = BackGroundColour
+cly = PressedColour          -- 改变按钮颜色[event:Button_Cchange] Arg1:按钮ID  Arg2：按钮颜色 Arg3:被按下后的按钮颜色 Arg4:字体颜色
+pra3 = WordColour
+PrintButton()
+end
+end
+end
+end
+function TouchButton(buttonid,monitorSide,startx,starty,legth,wordonit,BackGroundColour,WordColour,PressedColour)
+monitor = peripheral.wrap(monitorSide)
+term.redirect(monitor)                   -- 设定转移
+wordstart = legth / 2 - string.len(wordonit) / 2
+local function PrintButton()                 -- 绘图函数[未按下按钮]
+monitor.setCursorPos(startx,starty)
+counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColour)
+counter = counter + 1
+end
+monitor.setCursorPos(startx + wordstart,starty)
+monitor.setTextColor(WordColour)
+print(wordonit)
+end
+local function PrintButton2()                  -- 绘图函数[已按下按钮]
+monitor.setCursorPos(startx,starty)
+counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,PressedColour)
+counter = counter + 1
+end
+monitor.setCursorPos(startx + wordstart,starty)
+monitor.setTextColor(WordColour)
+print(wordonit)
+end
+PrintButton()
+local event = "?"
+local clb = 0
+local clx = 0
+local cly = 0
+while brake ~= true do
+event,clb,clx,cly,pra3 = os.pullEvent()
+if event == "monitor_touch" then
+if clb == monitorSide then                        -- 判断是否点击
+if cly == starty then
+if clx <= startx + legth then
+if clx >= startx then
+PrintButton2()
+os.sleep(0.2)
+PrintButton()                              -- 点击动画/发送EVENT[event: Button_click Arg1为按钮ID]
+os.queueEvent("Button_Touch",buttonid)
+end
+end
+end
+end
+elseif event == "Button_close" then
+if clb == buttonid then
+term.restore()                       -- 关闭按钮[关闭event: Button_close Arg1为按钮ID]
+brake = true
+end
+elseif event == "Button_Cchange" then
+if clb == buttonid then
+clx = BackGroundColour
+cly = PressedColour          -- 改变按钮颜色[event:Button_Cchange] Arg1:按钮ID  Arg2：按钮颜色 Arg3:被按下后的按钮颜色 Arg4:字体颜色
+pra3 = WordColour
+PrintButton()
+end
+end
+end
+end
+function TextBox(boxid,startx,starty,legth,BackGroundColour,WordColour)
+local function Printbox()                  -- 绘图函数[已按下按钮]
+term.setCursorPos(startx,starty)
+counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColour)
+counter = counter + 1
+end
+end
+Printbox()
+local brake = false
+while brake ~= true do
+event,clb,clx,cly = os.pullEvent()
+if event == "mouse_click" then
+if clb == 1 then                        -- 判断是否点击
+if cly == starty then
+if clx <= startx + legth then
+if clx > startx then
+Printbox()
+term.setCursorPos(startx,starty)
+term.setTextColor(WordColour)
+input = io.read()                           -- 点击动画/发送EVENT[event:Textbox_close Arg1为文本框ID,Arg2为用户输入]
+if input then
+os.queueEvent("Textbox_input",boxid,input)
+end
+end
+end
+end
+end
+elseif event == "Textbox_close" then
+if clb == boxid then                       -- 关闭文本框[关闭event: Textbox_close Arg1为文本框ID]
+brake = true
+end
+end
+end
+end
+function dot(startx,starty,colour)
+paintutils.drawPixel(startx,starty,colour)
+end
+function Touchdot(monside,startx,starty,colour)
+local monitor = peripheral.wrap(monside)
+term.redirect(monitor) 
+paintutils.drawPixel(startx,starty,colour)
+term.restore()
+end
+function line(startx,starty,legth,colour)
+term.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,colour)
+counter = counter + 1
+end
+end
+function Touchline(monside,startx,starty,legth,colour)
+local monitor = peripheral.wrap(monside)
+term.redirect(monitor) 
+monitor.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,colour)
+counter = counter + 1
+end
+term.restore()
+end
+function block(startx,starty,legth,width,colour)
+local currectx = 0
+local currecty = 0
+while  nowl ~= l  do
+paintutils.drawPixel(startx + currectx,starty + currecty,colour)
+local currectx = currectx + 1
+if currectx == width then                               -- 绘制背景颜色
+local currecty = currecty + 1
+local currectx = 0
+end
+end
+end
+function Touchblock(monside,startx,starty,legth,width,colour)
+local monitor = peripheral.wrap(monside)
+term.redirect(monitor) 
+local currectx = 0
+local currecty = 0
+while  nowl ~= l  do
+paintutils.drawPixel(startx + currectx,starty + currecty,colour)
+local currectx = currectx + 1
+if currectx == width then                               -- 绘制背景颜色
+local currecty = currecty + 1
+local currectx = 0
+end
+end
+term.restore()
+end
+function ProgressBar(barid,startx,starty,legth,BackGroundColor,FilledColor)
+-- 本函数通过event调度
+term.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColor)     -- draw ProgressBar
+counter = counter + 1
+end
+local brake = false
+local filled = 0
+while brake ~= true do
+event,id,value = os.pullEvent()
+if event == "ProgressBar_set" then
+if id == barid then
+filled = value
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColor)     -- draw ProgressBar
+counter = counter + 1
+end
+local counter2 = 0
+while counter2 ~= filled do
+paintutils.drawPixel(startx + counter2,starty,FilledColor)     -- draw Filled ProgressBar
+counter2 = counter2 + 1
+end
+end
+elseif event == "ProgressBar_close" then
+if id == barid then
+brake = true
+end
+end
+end
+end
+function TouchProgressBar(barid,monside,startx,starty,legth,BackGroundColor,FilledColor)
+-- 本函数通过event调度
+local monitor = peripheral.wrap(monside)
+term.redirect(monitor) 
+monitor.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColor)     -- draw ProgressBar
+counter = counter + 1
+end
+local brake = false
+local filled = 0
+while brake ~= true do
+event,id,value = os.pullEvent()
+if event == "ProgressBar_set" then
+if id == barid then
+filled = tonumber(value)
+local counter = 0
+while counter ~= legth do
+paintutils.drawPixel(startx + counter,starty,BackGroundColor)     -- draw ProgressBar
+counter = counter + 1
+end
+local counter2 = 0
+while counter2 ~= filled do
+paintutils.drawPixel(startx + counter2,starty,FilledColor)     -- draw Filled ProgressBar
+counter2 = counter2 + 1
+end
+end
+elseif event == "ProgressBar_close" then
+if id == barid then
+brake = true
+end
+end
+end
+term.restore()
+end
+function downMenu(menuid,startx,starty,wordonit,wordColour,menuColour,ClickedColour)
+
+local function lines(startx2,starty2,legth2,colour2)
+	term.setCursorPos(startx2,starty2)
+	local LDcounter = 0                                     -- 保持menu函数的standalone
+	while LDcounter ~= legth2 do
+		paintutils.drawPixel(startx + LDcounter,starty,colour2)
+		LDcounter = LDcounter + 1
+	end
+end
+
+
+local function PrintButton(startx3,starty3,legth3,wordonit3,BackGroundColour3,WordColour3)                 -- 绘图函数[未按下按钮]
+	term.setCursorPos(startx3,starty3)
+	P10counter = 0
+	while P10counter ~= legth3 do
+		paintutils.drawPixel(startx3 + P10counter,starty3,BackGroundColour3)
+		P10counter = P10counter + 1
+	end
+	term.setCursorPos(startx3 + 1,starty3)
+	term.setTextColor(WordColour3)
+	print(wordonit3)
+end
+
+
+local function PrintButton2(startx4,starty4,legth4,wordonit4,PressedColour4,WordColour4)                  -- 绘图函数[已按下按钮]
+	term.setCursorPos(startx4,starty4)
+	P11counter = 0
+	while P11counter ~= legth4 do
+		paintutils.drawPixel(startx4 + P11counter,starty4,PressedColour4)
+		P11counter = P11counter + 1
+	end
+	term.setCursorPos(startx4 + 1,starty4)
+	term.setTextColor(WordColour4)
+	print(wordonit4)
+end
+
+--[外界函数引入结束][引入来源: formAPI button函数 和 line函数]
+
+local StringLegth = 0
+local Scounter = 1
+
+while wordonit[Scounter] do
+	local Stemp = wordonit[Scounter]
+	local Cstring = string.len(Stemp)
+	if Cstring > StringLegth then
+	StringLegth = Cstring                                       -- 测定table中最长字符串的长
+	end
+	Scounter = Scounter + 1
+end
+local Legth = StringLegth  + 1 -- 字符串长检测完毕,值为Legth变量值
+local Tablecounter = 1
+while wordonit[Tablecounter] do
+local Ytemp = Tablecounter - 1
+	PrintButton(startx,starty + Ytemp ,Legth,wordonit[Tablecounter],menuColour,wordColour) -- 绘制菜单
+	Tablecounter = Tablecounter + 1
+end
+
+while Mbrake ~= true do
+	event,para1,para2,para3,para4 = os.pullEvent()
+	if event == "mouse_click" then
+		if para2 <= startx + Legth then
+			if para2 >= startx then
+				founded = false
+				local OrignChoosed = para3 - starty
+				while founded ~= true do
+					local TableChoosed = OrignChoosed + 1
+					if TableChoosed <= table.getn(wordonit) then                                     -- 判断单击的项目,并给予反应
+						if TableChoosed >= 0 then
+							
+							PrintButton2(startx,starty + OrignChoosed,Legth,wordonit[TableChoosed],ClickedColour,wordColour)
+							sleep(0.2)
+							PrintButton(startx,starty + OrignChoosed,Legth,wordonit[TableChoosed],menuColour,wordColour)     -- 逐个判定点击
+							os.queueEvent("Menu_click",menuid,TableChoosed)
+							TableChoosed = nil
+							OrignChoosed = nil
+							founded = true
+						end
+					end
+				end
+			end			
+		end
+	elseif event == "menu_close" then
+		if para1 == menuid then
+			Mbrake = true
+		end
+	end
+end
+
+end
