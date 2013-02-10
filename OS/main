@@ -2,7 +2,7 @@
 --======================图形初始化================
 function init_graph()
 term.setCursorPos(1,1)
-term.setBackgroundColor(1)
+term.setBackgroundColor(8)
 term.clear()                   -- 设置背景颜色
 term.setTextColor(32768)  -- 设置字体颜色
 t_wid,t_hei = term.getSize() -- 获取显示屏大小 t_wid即为宽度 t_hei即为长度
@@ -57,7 +57,18 @@ function Background()
 end
 --============== 页面区 ========================
 -- =================开始页面 ==========================
- form.line(1,1,t_wid,256)
+function Page_Main() -- 启动主页面用函数
+	stop.Smenu = false
+	stop.ProgramMenu = false
+	stop.clock = false
+	stop.Sbutton = false
+	stop.event = false
+	init_graph()
+	form.line(1,1,t_wid,128)
+	form.block(1,2,t_hei - 1,math.floor(t_wid / 2 - 1),256)
+	form.Vertline(math.floor(t_wid / 2),2,t_hei - 1,512)
+parallel.waitForAll(Background,Disp_start,Disp_time,Disp_program)
+end
 -- =========== 开始按钮 ==============================
 function Disp_start()
 	function start_Button()
@@ -86,7 +97,7 @@ function Disp_start()
 		end
 	end
 	
-	parallel.waitForAll(start_Button,start_Respond)
+	parallel.waitForAll(start_Button,start_Respond,start_Spvision)
 end
 -- ============= 时间显示 =============================
 function Disp_time()
@@ -95,8 +106,8 @@ function Disp_time()
 		os.sleep(0)
 		Int_time = os.time()                      -- 显示时间
 		term.setCursorPos(t_wid - 8,1)
-		term.setTextColor(1)
-		term.setBackgroundColor(256)
+		term.setTextColor(512)
+		term.setBackgroundColor(128)
 		print(textutils.formatTime(Int_time, false ))
 	end
 
@@ -104,8 +115,24 @@ end
 --=========== 主菜单,程序显示 ===================
 function Disp_program()
 	function Menu_Filelist()
-		Filelist = fs.list("")
-		form.Spec_downMenu(2,1,2,math.floor(t_wid / 2),Filelist,32768,1,8)
+		Fpath = ""
+		ProgPage = 0
+		Int_Flist = fs.list(Fpath)  --获取当前路径下的所有信息
+		Filelist = {} -- 定义显示用表
+		if table.getn(Int_Flist) > 16 then
+			Filelist[1] = "Mother_Folder"
+			Filelist[2] = "Up"
+			Filelist[17] = "More"
+			for FTc=1,15 do
+				Filelist[FTc + 2] = Int_Flist[FTc + (15 * ProgPage)] -- 对表内容进行偏移
+			end
+		else
+		for FTc=1,15 do
+			Filelist[FTc + 1] = Int_Flist[FTc + (15 * ProgPage)] -- 对表内容进行偏移
+		end
+		Filelist[1] = "Mother_Folder"
+		end
+		form.Spec_downMenu(2,1,3,math.floor(t_wid / 2 - 1),Filelist,1,256,8)
 	end
 	
 	function Menu_Spvision()
@@ -114,20 +141,19 @@ function Disp_program()
 			if event_name == "Menu_click" then
 				if event_pram1 == 2 then
 					Prog_name = Filelist[event_pram2] -- 获取程序名
-					print("loading")
 					Main_stop()
-					--[[init_graph()
+					init_graph()
+					term.setCursorPos(1,1)
 					shell.run(Prog_name)
 					Page_Main()
-					]]--
 				end
 			end	
 		end
 		if stop.ProgramMenu == true then
-			os.queueEvent("Menu_close",2) 
+			os.queueEvent("menu_close",2) 
 		end
 	end
-	parallel.waitForAll(Menu_Filelist,Menu_Spvision)
+	parallel.waitForAll(Menu_Filelist)
 end
 --============= 收场用函数 ========================
 function Main_stop()
@@ -137,14 +163,5 @@ function Main_stop()
 	stop.Sbutton = true
 	stop.event = true
 end
-function Page_Main()
-	stop.Smenu = false
-	stop.ProgramMenu = false
-	stop.clock = false
-	stop.Sbutton = false
-	stop.event = false
-	init_graph()
-	 form.line(1,1,t_wid,256)
-parallel.waitForAll(Background,Disp_start,Disp_time,Disp_program)
-end
+
 Page_Main()

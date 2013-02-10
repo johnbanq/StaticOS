@@ -176,6 +176,14 @@ paintutils.drawPixel(startx + counter,starty,colour)
 counter = counter + 1
 end
 end
+function Vertline(startx,starty,height,colour)
+term.setCursorPos(startx,starty)
+local counter = 0
+while counter ~= height do
+paintutils.drawPixel(startx,starty + counter,colour)
+counter = counter + 1
+end
+end
 function Touchline(monside,startx,starty,legth,colour)
 local monitor = peripheral.wrap(monside)
 term.redirect(monitor) 
@@ -187,15 +195,15 @@ counter = counter + 1
 end
 term.restore()
 end
-function block(startx,starty,legth,width,colour)
+function block(startx,starty,height,width,colour)
 local currectx = 0
 local currecty = 0
-while  nowl ~= l  do
+while  currecty ~= height  do
 paintutils.drawPixel(startx + currectx,starty + currecty,colour)
-local currectx = currectx + 1
+currectx = currectx + 1
 if currectx == width then                               -- 绘制背景颜色
-local currecty = currecty + 1
-local currectx = 0
+currecty = currecty + 1
+currectx = 0
 end
 end
 end
